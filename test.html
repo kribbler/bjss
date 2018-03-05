@@ -1,0 +1,78 @@
+
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Testing Products App</title>
+	<script type="text/javascript" src="lib/js/jquery.min.js"></script>	
+	<script type="text/javascript" src="lib/js/underscore-min.js"></script>	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+
+	<script type="text/javascript" src="lib/js/bootstrap.min.js"></script>	
+
+	<script type="text/javascript" src="lib/js/accounting.min.js"></script>	
+
+	<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.5.1.css">
+	<script src="https://code.jquery.com/qunit/qunit-2.5.1.js"></script>
+	<script src="main.js"></script>
+
+	<script>
+	QUnit.test("Init variables", function( assert ) {
+		var products = getProducts();
+		initAccounting();
+
+		assert.equal(defaultCurrency, "USD", "Passed defaultCurrency...");
+		assert.equal(products.length, 4, "Passed getProducts()");
+		assert.equal(accounting.settings.currency.symbol, "USD", "Passed initAccounting()");
+	});
+
+	QUnit.test("Render products", function( assert ) {
+		var products = getProducts();
+		displayProducts(products);
+		var productsCells = document.getElementsByClassName("productName");
+		assert.equal(productsCells[0].innerHTML, "Peas", 'Found Peas');
+	});
+
+	QUnit.test("Adding to basket", function(assert) {
+		//init products object
+		var products = getProducts();
+		var id = 'Peas';
+		var qty = '2';
+
+		//check if product is added to cart
+		products = updateCart(id, qty);
+		assert.equal(products[0].quantity, qty, "Product added to cart");
+
+		//check if 'View Total' button is visible
+		displayCheckout();
+		var viewTotalButton = document.getElementById("checkout");
+		var isDisabled = viewTotalButton.classList.contains("d-none");
+		assert.equal(isDisabled, false, "View Total button is visible");
+
+		//check if amount is visible
+		displayTotalAmount();
+		var totalSpan = document.getElementById("total");
+		assert.equal(totalSpan.innerHTML, (products[0].price * qty).toFixed(2), "Total is visible");
+	});
+
+	QUnit.test("Get currencies", function(assert) {
+		var done = assert.async();
+		
+		$.getJSON( currencyUrl, {}, function( data ) {
+			assert.ok(data, "recieved currencies");
+		    done();
+		  });
+	});	
+
+	</script>
+</head>
+<body>
+
+<div id="qunit"></div>
+<div id="qunit-fixture">
+	<ul class="list-group" id="productsList"></ul>
+	<button type="button" class="btn btn-success d-none" id="checkout">View Total</button>
+	<span id="currentCurrency"></span> <span id="total"></span>
+</div> 
+</body>
+</html>
